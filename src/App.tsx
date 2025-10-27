@@ -4,11 +4,13 @@ import { CaraCruz } from './components/CaraCruz';
 import { Dado } from './components/Dado';
 import { PiedraPapelTijera } from './components/PiedraPapelTijera';
 import { Blackjack } from './components/Blackjack';
+import { SlotMachine } from './components/SlotMachine';
+import { TumbleSlot } from './components/TumbleSlot';
 
-type Tab = 'ruleta' | 'cara-cruz' | 'dado' | 'ppt' | 'blackjack';
+type Tab = 'ruleta' | 'cara-cruz' | 'dado' | 'ppt' | 'blackjack' | 'slot' | 'tumble';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<Tab>('ruleta');
+  const [activeTab, setActiveTab] = useState<Tab>('tumble');
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Cargar tema del localStorage
@@ -34,6 +36,8 @@ function App() {
   };
 
   const TABS = [
+    { id: 'tumble', label: '⚡ Gates of Olympus', color: 'yellow' },
+    { id: 'slot', label: '🎰 Slot Clásico', color: 'orange' },
     { id: 'ruleta', label: '🎡 Ruleta', color: 'purple' },
     { id: 'cara-cruz', label: '🪙 Cara o Cruz', color: 'blue' },
     { id: 'dado', label: '🎲 Dado', color: 'indigo' },
@@ -87,6 +91,8 @@ function App() {
 
         {/* Contenido */}
         <div className="w-full">
+          {activeTab === 'tumble' && <TumbleSlot />}
+          {activeTab === 'slot' && <SlotMachine />}
           {activeTab === 'ruleta' && <Ruleta />}
           {activeTab === 'cara-cruz' && <CaraCruz />}
           {activeTab === 'dado' && <Dado />}
