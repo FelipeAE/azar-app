@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/components/blackjack.tsx","./src/components/caracruz.tsx","./src/components/dado.tsx","./src/components/modal.tsx","./src/components/piedrapapeltijera.tsx","./src/components/ruleta.tsx","./src/components/ruletasimplificada.tsx","./src/utils/sounds.ts"],"version":"5.9.3"}

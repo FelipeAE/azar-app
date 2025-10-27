@@ -222,7 +222,6 @@ export const Blackjack = () => {
     setShowConfirmModal(false);
   };
 
-  const winRate = stats.totalGames > 0 ? ((stats.wins / stats.totalGames) * 100).toFixed(1) : 0;
 
   const renderCard = (card: Card | null, faceDown: boolean = false) => {
     if (!card) return null;

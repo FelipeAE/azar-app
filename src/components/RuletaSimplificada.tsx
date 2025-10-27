@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { Modal } from './Modal';
 import { playSound } from '../utils/sounds';
 
@@ -30,7 +29,7 @@ const WHEEL_NUMBERS: WheelNumber[] = [
   { num: 0, color: 'verde' },
   ...Array.from({ length: 36 }, (_, i) => ({
     num: i + 1,
-    color: (i + 1) % 2 === 0 ? 'rojo' : 'negro',
+    color: ((i + 1) % 2 === 0 ? 'rojo' : 'negro') as 'rojo' | 'negro',
   })),
 ];
 
