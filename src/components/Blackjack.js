@@ -68,13 +68,23 @@ export const Blackjack = () => {
         return score;
     };
     const startGame = () => {
-        const newDeck = [...deck];
+        let newDeck = [...deck];
+        // Si el deck tiene menos de 20 cartas, reinicializar
+        if (newDeck.length < 20) {
+            newDeck = createDeck();
+        }
         const player = [];
         const dealer = [];
-        player.push(newDeck.pop());
-        dealer.push(newDeck.pop());
-        player.push(newDeck.pop());
-        dealer.push(newDeck.pop());
+        const card1 = newDeck.pop();
+        const card2 = newDeck.pop();
+        const card3 = newDeck.pop();
+        const card4 = newDeck.pop();
+        if (!card1 || !card2 || !card3 || !card4)
+            return;
+        player.push(card1);
+        dealer.push(card2);
+        player.push(card3);
+        dealer.push(card4);
         setDeck(newDeck);
         setPlayerHand(player);
         setDealerHand(dealer);
@@ -85,14 +95,19 @@ export const Blackjack = () => {
         setPlayerScore(calculateScore(player));
     };
     const hit = () => {
-        const newCard = deck.pop();
+        let newDeck = [...deck];
+        // Reinicializar deck si tiene pocas cartas
+        if (newDeck.length < 10) {
+            newDeck = createDeck();
+        }
+        const newCard = newDeck.pop();
         if (!newCard)
             return;
         const newHand = [...playerHand, newCard];
         setPlayerHand(newHand);
         const newScore = calculateScore(newHand);
         setPlayerScore(newScore);
-        setDeck([...deck]);
+        setDeck(newDeck);
         if (newScore > 21) {
             endGame(newHand, dealerHand, true);
         }
@@ -104,14 +119,23 @@ export const Blackjack = () => {
     const dealerTurn = (hand) => {
         let dealerCards = [...hand];
         let dealerCurrentScore = calculateScore(dealerCards);
+        let currentDeck = [...deck];
         const dealerAutomatic = () => {
-            while (dealerCurrentScore < 17 && deck.length > 0) {
-                const newCard = deck.pop();
+            while (dealerCurrentScore < 17) {
+                // Reinicializar deck si es necesario
+                if (currentDeck.length < 5) {
+                    currentDeck = createDeck();
+                }
+                const newCard = currentDeck.pop();
                 if (newCard) {
                     dealerCards.push(newCard);
                     dealerCurrentScore = calculateScore(dealerCards);
                 }
+                else {
+                    break;
+                }
             }
+            setDeck(currentDeck);
             setDealerHand(dealerCards);
             setDealerScore(dealerCurrentScore);
             endGame(playerHand, dealerCards, false);

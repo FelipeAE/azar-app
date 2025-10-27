@@ -10,7 +10,9 @@
       "Bash(git commit -m \"$(cat <<''EOF''\nAzar App - Juegos de azar con React + Vite\n\nCaracterísticas:\n- Ruleta personalizable con añadir/quitar items\n- Cara o Cruz con animación 3D\n- Dado con animación de rotación\n- Piedra Papel Tijera con IA\n- Blackjack con cartas estándar\n- Tema claro/oscuro\n- Atajos de teclado (Enter, Space)\n- Historial de jugadas\n- Sonidos usando Web Audio API\n- Estadísticas persistentes con localStorage\n- Diseño responsive\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git push:*)",
       "Bash(npm run build:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nFix: Configurar Vite para GitHub Pages\n\n- Agregar base: ''/azar-app/'' en vite.config.ts\n- Remover import no usado de motion en RuletaSimplificada\n- Arreglar error de tipo con color en WHEEL_NUMBERS\n- Remover extensión .tsx de imports en main.tsx\n- Build exitoso para producción\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit -m \"$(cat <<''EOF''\nFix: Configurar Vite para GitHub Pages\n\n- Agregar base: ''/azar-app/'' en vite.config.ts\n- Remover import no usado de motion en RuletaSimplificada\n- Arreglar error de tipo con color en WHEEL_NUMBERS\n- Remover extensión .tsx de imports en main.tsx\n- Build exitoso para producción\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
