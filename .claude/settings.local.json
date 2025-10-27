@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(npx create-vite@latest . --template react-ts -- --yes)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAzar App - Juegos de azar con React + Vite\n\nCaracterísticas:\n- Ruleta personalizable con añadir/quitar items\n- Cara o Cruz con animación 3D\n- Dado con animación de rotación\n- Piedra Papel Tijera con IA\n- Blackjack con cartas estándar\n- Tema claro/oscuro\n- Atajos de teclado (Enter, Space)\n- Historial de jugadas\n- Sonidos usando Web Audio API\n- Estadísticas persistentes con localStorage\n- Diseño responsive\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
