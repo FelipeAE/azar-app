@@ -90,6 +90,8 @@ export const TumbleSlot = () => {
   });
   const [showPaytable, setShowPaytable] = useState(false);
   const [useAnteBet, setUseAnteBet] = useState(false);
+  const [autoSpinsRemaining, setAutoSpinsRemaining] = useState(0);
+  const [autoSpinsActive, setAutoSpinsActive] = useState(false);
 
   // Cargar estadísticas
   useEffect(() => {
@@ -189,11 +191,11 @@ export const TumbleSlot = () => {
     playSound('spin');
 
     // Generar nuevo grid con animación de caída
-    await generateNewGrid();
+    const newGrid = await generateNewGrid();
 
     // Verificar scatters para free spins
     if (!inFreeSpins) {
-      const scatterCount = countSymbol(grid, 'zeus');
+      const scatterCount = countSymbol(newGrid, 'zeus');
       if (scatterCount >= 4) {
         const spinsToAdd = scatterCount === 4 ? 15 : scatterCount === 5 ? 20 : 30;
         setFreeSpinsCount(spinsToAdd);
@@ -217,10 +219,17 @@ export const TumbleSlot = () => {
         return newCount;
       });
     }
+
+    // Si hay auto spins activos, decrementar contador
+    if (autoSpinsActive && autoSpinsRemaining > 0) {
+      const newRemaining = autoSpinsRemaining - 1;
+      setAutoSpinsRemaining(newRemaining);
+      console.log('✅ Spin completado, restantes:', newRemaining);
+    }
   };
 
   // Generar nuevo grid
-  const generateNewGrid = async () => {
+  const generateNewGrid = async (): Promise<GridCell[][]> => {
     const newGrid: GridCell[][] = [];
     for (let row = 0; row < ROWS; row++) {
       newGrid[row] = [];
@@ -235,6 +244,7 @@ export const TumbleSlot = () => {
     }
     setGrid(newGrid);
     await new Promise((resolve) => setTimeout(resolve, 500));
+    return newGrid;
   };
 
   // Contar cuántos símbolos hay en el grid
@@ -416,50 +426,97 @@ export const TumbleSlot = () => {
     playSound('win');
   };
 
+  // Iniciar giros automáticos
+  const startAutoSpins = (count: number) => {
+    console.log('🎰 Iniciando auto-spins:', { count, balance, totalBet, check: balance >= totalBet * 10 });
+    if (isSpinning || balance < totalBet || balance < totalBet * 10 || inFreeSpins) return;
+    setAutoSpinsRemaining(count);
+    setAutoSpinsActive(true);
+    setTimeout(() => spin(), 100);
+  };
+
+  // Detener giros automáticos
+  const stopAutoSpins = () => {
+    setAutoSpinsActive(false);
+    setAutoSpinsRemaining(0);
+  };
+
   // Manejar teclas
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if ((e.key === 'Enter' || e.key === ' ') && !autoSpinsActive) {
         e.preventDefault();
         spin();
       }
     };
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [isSpinning, balance, totalBet, inFreeSpins]);
+  }, [isSpinning, balance, totalBet, inFreeSpins, autoSpinsActive]);
+
+  // Efecto para continuar auto-spin
+  useEffect(() => {
+    // No hacer nada si no está activo, está girando, o ya llegó a 0
+    if (!autoSpinsActive || isSpinning || autoSpinsRemaining <= 0) {
+      if (autoSpinsRemaining === 0 && autoSpinsActive) {
+        setAutoSpinsActive(false);
+        console.log('🛑 Auto-spin completado - llegó a 0');
+      }
+      return;
+    }
+    
+    console.log('🔄 useEffect auto-spin:', { autoSpinsRemaining, balance, totalBet, check: balance >= totalBet * 10 });
+    
+    // Verificar si podemos continuar
+    const canContinue = autoSpinsRemaining > 0 && balance >= totalBet * 10 && !inFreeSpins;
+    
+    if (canContinue) {
+      console.log('✅ Programando siguiente giro en 1000ms');
+      const timer = setTimeout(() => {
+        spin();
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      console.log('❌ Deteniendo auto-spin - Balance bajo o Free Spins');
+      setAutoSpinsActive(false);
+      setAutoSpinsRemaining(0);
+      if (balance < totalBet * 10) {
+        playSound('lose');
+      }
+    }
+  }, [autoSpinsActive, autoSpinsRemaining, isSpinning, balance, totalBet, inFreeSpins]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-800 to-indigo-900 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-800 to-indigo-900 py-2 px-2">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-t-2xl p-4 shadow-2xl">
-          <div className="flex justify-between items-center flex-wrap gap-4">
+        <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-t-xl p-2 shadow-2xl">
+          <div className="flex justify-between items-center flex-wrap gap-2">
             <div>
-              <div className="text-3xl font-bold text-white">
+              <div className="text-lg md:text-xl font-bold text-white">
                 ⚡ Gates of Olympus Style
               </div>
               {inFreeSpins && (
-                <div className="text-xl font-bold text-purple-900 animate-pulse">
+                <div className="text-sm font-bold text-purple-900 animate-pulse">
                   🎉 FREE SPINS: {freeSpinsCount} restantes 🎉
                 </div>
               )}
             </div>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-lg md:text-xl font-bold text-white">
               💰 ${balance.toFixed(2)}
             </div>
           </div>
         </div>
 
-        {/* Controles */}
-        <div className="bg-gradient-to-r from-purple-700 to-purple-800 p-4 flex justify-between items-center flex-wrap gap-4">
-          <div className="flex gap-4 items-center flex-wrap">
-            <div className="bg-white/20 rounded-lg px-4 py-2">
+        {/* Controls */}
+        <div className="bg-gradient-to-r from-purple-700 to-purple-800 p-2 flex justify-between items-center flex-wrap gap-2">
+          <div className="flex gap-2 items-center flex-wrap">
+            <div className="bg-white/20 rounded-lg px-3 py-1.5">
               <div className="text-xs text-white/80">Apuesta</div>
               <select
                 value={bet}
                 onChange={(e) => setBet(Number(e.target.value))}
                 disabled={isSpinning || inFreeSpins}
-                className="bg-transparent text-white font-bold text-lg border-none outline-none cursor-pointer"
+                className="bg-transparent text-white font-bold text-base border-none outline-none cursor-pointer"
               >
                 {[20, 50, 100, 200, 500, 1000, 2000].map((b) => (
                   <option key={b} value={b} className="text-gray-900">
@@ -468,28 +525,85 @@ export const TumbleSlot = () => {
                 ))}
               </select>
             </div>
-            <div className="bg-white/20 rounded-lg px-4 py-2">
+            <div className="bg-white/20 rounded-lg px-3 py-1.5">
               <div className="text-xs text-white/80">Apuesta Total</div>
-              <div className="text-white font-bold text-lg">
+              <div className="text-white font-bold text-base">
                 ${totalBet.toFixed(2)}
               </div>
             </div>
+                        {/* Ante Bet */}
             <button
               onClick={() => setUseAnteBet(!useAnteBet)}
               disabled={isSpinning || inFreeSpins}
-              className={`px-4 py-2 rounded-lg font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${
                 useAnteBet
                   ? 'bg-yellow-500 text-white'
                   : 'bg-white/20 text-white/80'
               }`}
             >
-              ANTE BET (25%)
+              ANTE BET
             </button>
           </div>
-          <div className="flex gap-2">
+
+          <div className="flex gap-1">
             <button
               onClick={buyFreeSpins}
               disabled={isSpinning || balance < bet * 100 || inFreeSpins}
+              className="px-2 py-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white text-sm font-bold rounded-lg transition-all"
+            >
+              💰 BONUS
+            </button>
+
+            <button
+              onClick={() => setShowPaytable(!showPaytable)}
+              className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-all"
+            >
+              📋 PAGOS
+            </button>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {!autoSpinsActive ? (
+              <div className="flex gap-1">
+                <button
+                  onClick={() => startAutoSpins(10)}
+                  disabled={isSpinning || balance < totalBet || inFreeSpins}
+                  className="px-3 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-500 text-white font-bold rounded-lg transition-all text-sm"
+                >
+                  🔄 10
+                </button>
+                <button
+                  onClick={() => startAutoSpins(20)}
+                  disabled={isSpinning || balance < totalBet || inFreeSpins}
+                  className="px-3 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-500 text-white font-bold rounded-lg transition-all text-sm"
+                >
+                  🔄 20
+                </button>
+                <button
+                  onClick={() => startAutoSpins(50)}
+                  disabled={isSpinning || balance < totalBet || inFreeSpins}
+                  className="px-3 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-500 text-white font-bold rounded-lg transition-all text-sm"
+                >
+                  🔄 50
+                </button>
+                <button
+                  onClick={() => startAutoSpins(100)}
+                  disabled={isSpinning || balance < totalBet || inFreeSpins}
+                  className="px-3 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-500 text-white font-bold rounded-lg transition-all text-sm"
+                >
+                  🔄 100
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={stopAutoSpins}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-all animate-pulse"
+              >
+                ⏹️ DETENER ({autoSpinsRemaining})
+              </button>
+            )}
+            <button
+              onClick={buyFreeSpins}
+              disabled={isSpinning || balance < bet * 100 || inFreeSpins || autoSpinsActive}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white font-bold rounded-lg transition-all"
             >
               💰 COMPRAR BONUS (100x)
@@ -503,20 +617,20 @@ export const TumbleSlot = () => {
           </div>
         </div>
 
-        {/* Grid del Slot */}
-        <div className="bg-gradient-to-b from-indigo-950 to-purple-950 p-8 shadow-2xl relative">
+        {/* Grid de Juego */}
+        <div className="bg-gradient-to-b from-indigo-950 to-purple-950 p-2 shadow-2xl relative">
           {/* Multiplicador Total */}
           {totalMultiplier > 1 && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute top-4 right-4 bg-yellow-500 text-white font-bold text-2xl px-6 py-3 rounded-full z-10 shadow-2xl"
+              className="absolute top-2 right-2 bg-yellow-500 text-white font-bold text-sm px-2 py-1 rounded-full z-10 shadow-2xl"
             >
               x{totalMultiplier}
             </motion.div>
           )}
 
-          <div className="grid grid-cols-6 gap-2 bg-black/30 p-4 rounded-xl">
+          <div className="grid grid-cols-6 gap-0.5 bg-black/30 p-1 rounded-xl">
             {grid.map((row, rowIndex) =>
               row.map((cell, colIndex) => {
                 const position = rowIndex * COLS + colIndex;
@@ -526,8 +640,8 @@ export const TumbleSlot = () => {
                 return (
                   <motion.div
                     key={cell.id}
-                    className={`aspect-square bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex flex-col items-center justify-center text-4xl md:text-5xl font-bold shadow-lg relative ${
-                      isWinning ? 'ring-4 ring-yellow-400' : ''
+                    className={`aspect-square bg-gradient-to-br from-purple-400 to-purple-600 rounded flex flex-col items-center justify-center text-base md:text-lg font-bold shadow-lg relative ${
+                      isWinning ? 'ring-1 ring-yellow-400' : ''
                     }`}
                     style={{
                       backgroundColor: symbol?.color
@@ -551,7 +665,7 @@ export const TumbleSlot = () => {
                   >
                     {symbol?.icon || ''}
                     {cell.multiplier && (
-                      <div className="absolute -top-2 -right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                      <div className="absolute -top-1 -right-1 bg-yellow-500 text-white text-xs font-bold px-1 py-0.5 rounded-full shadow-lg">
                         x{cell.multiplier}
                       </div>
                     )}
@@ -562,17 +676,28 @@ export const TumbleSlot = () => {
           </div>
 
           {/* Botón Spin */}
-          <div className="mt-6 flex justify-center">
+          <div className="mt-6 flex justify-center flex-col items-center gap-2">
+            {autoSpinsActive && (
+              <div className="bg-purple-600 text-white px-6 py-2 rounded-full font-bold text-lg">
+                🔄 AUTO SPINS: {autoSpinsRemaining} restantes
+              </div>
+            )}
             <button
               onClick={spin}
-              disabled={isSpinning || balance < totalBet}
-              className={`px-16 py-5 rounded-full text-3xl font-bold transition-all transform ${
-                isSpinning || (balance < totalBet && !inFreeSpins)
+              disabled={isSpinning || balance < totalBet || autoSpinsActive}
+              className={`px-10 py-3 rounded-full text-xl font-bold transition-all transform ${
+                isSpinning || (balance < totalBet && !inFreeSpins) || autoSpinsActive
                   ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                   : 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:scale-105 hover:shadow-2xl active:scale-95'
               }`}
             >
-              {isSpinning ? '⚡ GIRANDO...' : inFreeSpins ? '🎰 FREE SPIN' : '🎰 GIRAR'}
+              {autoSpinsActive
+                ? '🔄 AUTO...'
+                : isSpinning
+                ? '⚡ GIRANDO...'
+                : inFreeSpins
+                ? '🎰 FREE SPIN'
+                : '🎰 GIRAR'}
             </button>
           </div>
 
@@ -581,13 +706,13 @@ export const TumbleSlot = () => {
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="mt-6 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl p-6 text-center"
+              className="mt-3 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl p-3 text-center"
             >
-              <div className="text-4xl font-bold text-white">
+              <div className="text-2xl font-bold text-white">
                 🎉 GANASTE ${lastWin.toFixed(2)}! 🎉
               </div>
               {totalMultiplier > 1 && (
-                <div className="text-2xl font-bold text-purple-900 mt-2">
+                <div className="text-lg font-bold text-purple-900 mt-1">
                   Multiplicador Total: x{totalMultiplier}
                 </div>
               )}
@@ -596,26 +721,26 @@ export const TumbleSlot = () => {
         </div>
 
         {/* Estadísticas */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-b-2xl p-4 shadow-2xl">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center text-white">
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-b-xl p-2 shadow-2xl">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-white">
             <div>
-              <div className="text-2xl font-bold">{stats.totalSpins}</div>
+              <div className="text-lg font-bold">{stats.totalSpins}</div>
               <div className="text-xs opacity-80">Giros</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">
+              <div className="text-lg font-bold">
                 ${stats.totalWagered.toFixed(0)}
               </div>
               <div className="text-xs opacity-80">Apostado</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">
+              <div className="text-lg font-bold">
                 ${stats.totalWon.toFixed(0)}
               </div>
               <div className="text-xs opacity-80">Ganado</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">
+              <div className="text-lg font-bold">
                 ${stats.biggestWin.toFixed(0)}
               </div>
               <div className="text-xs opacity-80">Mayor Ganancia</div>

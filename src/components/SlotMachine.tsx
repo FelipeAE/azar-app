@@ -82,6 +82,8 @@ export const SlotMachine = () => {
     totalWon: 0,
     biggestWin: 0,
   });
+  const [autoSpinsRemaining, setAutoSpinsRemaining] = useState(0);
+  const [autoSpinsActive, setAutoSpinsActive] = useState(false);
 
   // Cargar estadísticas
   useEffect(() => {
@@ -197,6 +199,13 @@ export const SlotMachine = () => {
     }
 
     setIsSpinning(false);
+
+    // Si hay auto spins activos, decrementar contador
+    if (autoSpinsActive && autoSpinsRemaining > 0) {
+      const newRemaining = autoSpinsRemaining - 1;
+      setAutoSpinsRemaining(newRemaining);
+      console.log('✅ SlotMachine spin completado, restantes:', newRemaining);
+    }
   };
 
   // Calcular ganancias en todas las líneas activas
@@ -243,17 +252,63 @@ export const SlotMachine = () => {
     return { lines, totalPayout };
   };
 
+  // Iniciar giros automáticos
+  const startAutoSpins = (count: number) => {
+    console.log('🎰 SlotMachine iniciando:', { count, balance, totalBet, check: balance >= totalBet * 10 });
+    if (isSpinning || balance < totalBet || balance < totalBet * 10) return;
+    setAutoSpinsRemaining(count);
+    setAutoSpinsActive(true);
+    setTimeout(() => spin(), 100);
+  };
+
+  // Detener giros automáticos
+  const stopAutoSpins = () => {
+    setAutoSpinsActive(false);
+    setAutoSpinsRemaining(0);
+  };
+
   // Manejar teclas
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if ((e.key === 'Enter' || e.key === ' ') && !autoSpinsActive) {
         e.preventDefault();
         spin();
       }
     };
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [isSpinning, balance, totalBet]);
+  }, [isSpinning, balance, totalBet, autoSpinsActive]);
+
+  // Efecto para continuar auto-spin
+  useEffect(() => {
+    // No hacer nada si no está activo, está girando, o ya llegó a 0
+    if (!autoSpinsActive || isSpinning || autoSpinsRemaining <= 0) {
+      if (autoSpinsRemaining === 0 && autoSpinsActive) {
+        setAutoSpinsActive(false);
+        console.log('🛑 SlotMachine auto-spin completado - llegó a 0');
+      }
+      return;
+    }
+    
+    console.log('🔄 SlotMachine useEffect:', { autoSpinsRemaining, balance, totalBet, check: balance >= totalBet * 10 });
+    
+    const canContinue = autoSpinsRemaining > 0 && balance >= totalBet * 10;
+    
+    if (canContinue) {
+      console.log('✅ SlotMachine programando siguiente giro');
+      const timer = setTimeout(() => {
+        spin();
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      console.log('❌ SlotMachine deteniendo - Balance bajo');
+      setAutoSpinsActive(false);
+      setAutoSpinsRemaining(0);
+      if (balance < totalBet * 10) {
+        playSound('lose');
+      }
+    }
+  }, [autoSpinsActive, autoSpinsRemaining, isSpinning, balance, totalBet]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-800 via-green-700 to-green-900 py-8 px-4">
@@ -301,15 +356,57 @@ export const SlotMachine = () => {
               </div>
             </div>
           </div>
+          {/* Controles de Auto Spin */}
+          <div className="mt-3 flex justify-center gap-2 flex-wrap">
+            {!autoSpinsActive ? (
+              <>
+                <button
+                  onClick={() => startAutoSpins(10)}
+                  disabled={isSpinning || balance < totalBet}
+                  className="px-3 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-500 text-white font-bold rounded-lg transition-all text-sm"
+                >
+                  🔄 10
+                </button>
+                <button
+                  onClick={() => startAutoSpins(20)}
+                  disabled={isSpinning || balance < totalBet}
+                  className="px-3 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-500 text-white font-bold rounded-lg transition-all text-sm"
+                >
+                  🔄 20
+                </button>
+                <button
+                  onClick={() => startAutoSpins(50)}
+                  disabled={isSpinning || balance < totalBet}
+                  className="px-3 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-500 text-white font-bold rounded-lg transition-all text-sm"
+                >
+                  🔄 50
+                </button>
+                <button
+                  onClick={() => startAutoSpins(100)}
+                  disabled={isSpinning || balance < totalBet}
+                  className="px-3 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-500 text-white font-bold rounded-lg transition-all text-sm"
+                >
+                  🔄 100
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={stopAutoSpins}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-all animate-pulse"
+              >
+                ⏹️ DETENER ({autoSpinsRemaining})
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Slot Machine */}
-        <div className="bg-gradient-to-b from-blue-900 to-blue-950 p-8 shadow-2xl">
+        <div className="bg-gradient-to-b from-blue-900 to-blue-950 p-4 shadow-2xl">
           <div className="relative">
             {/* Carretes */}
-            <div className="grid grid-cols-5 gap-2 bg-black/30 p-4 rounded-xl">
+            <div className="grid grid-cols-5 gap-1 bg-black/30 p-2 rounded-xl">
               {reels.map((reel, colIndex) => (
-                <div key={colIndex} className="flex flex-col gap-2">
+                <div key={colIndex} className="flex flex-col gap-1">
                   {reel.map((symbol, rowIndex) => {
                     const isWinningSymbol = winningLines.some((line) =>
                       line.positions.includes(colIndex * 3 + rowIndex)
@@ -317,9 +414,9 @@ export const SlotMachine = () => {
                     return (
                       <motion.div
                         key={`${colIndex}-${rowIndex}`}
-                        className={`aspect-square bg-gradient-to-br from-white to-gray-200 rounded-lg flex items-center justify-center text-5xl font-bold shadow-lg ${
+                        className={`aspect-square bg-gradient-to-br from-white to-gray-200 rounded flex items-center justify-center text-base md:text-lg font-bold shadow-lg ${
                           isWinningSymbol && showWinAnimation
-                            ? 'ring-4 ring-yellow-400'
+                            ? 'ring-2 ring-yellow-400'
                             : ''
                         }`}
                         style={{
@@ -362,17 +459,22 @@ export const SlotMachine = () => {
           </div>
 
           {/* Botón de Spin */}
-          <div className="mt-6 flex justify-center">
+          <div className="mt-3 flex justify-center flex-col items-center gap-2">
+            {autoSpinsActive && (
+              <div className="bg-purple-600 text-white px-4 py-1.5 rounded-full font-bold text-base">
+                🔄 AUTO SPINS: {autoSpinsRemaining} restantes
+              </div>
+            )}
             <button
               onClick={spin}
-              disabled={isSpinning || balance < totalBet}
-              className={`px-12 py-4 rounded-full text-2xl font-bold transition-all transform ${
-                isSpinning || balance < totalBet
+              disabled={isSpinning || balance < totalBet || autoSpinsActive}
+              className={`px-10 py-3 rounded-full text-xl font-bold transition-all transform ${
+                isSpinning || balance < totalBet || autoSpinsActive
                   ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                   : 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:scale-105 hover:shadow-2xl active:scale-95'
               }`}
             >
-              {isSpinning ? '🎰 GIRANDO...' : '🎰 GIRAR'}
+              {autoSpinsActive ? '🔄 AUTO...' : isSpinning ? '🎰 GIRANDO...' : '🎰 GIRAR'}
             </button>
           </div>
 
@@ -381,9 +483,9 @@ export const SlotMachine = () => {
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="mt-6 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl p-4 text-center"
+              className="mt-3 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl p-3 text-center"
             >
-              <div className="text-3xl font-bold text-white">
+              <div className="text-2xl font-bold text-white">
                 🎉 ¡GANASTE ${lastWin.toFixed(2)}! 🎉
               </div>
               <div className="mt-2 text-sm text-white/90">
@@ -395,26 +497,26 @@ export const SlotMachine = () => {
         </div>
 
         {/* Estadísticas */}
-        <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-b-2xl p-4 shadow-2xl">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-white">
+        <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-b-xl p-2 shadow-2xl">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-white">
             <div>
-              <div className="text-2xl font-bold">{stats.totalSpins}</div>
+              <div className="text-lg font-bold">{stats.totalSpins}</div>
               <div className="text-xs opacity-80">Giros Totales</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">
+              <div className="text-lg font-bold">
                 ${stats.totalWagered.toFixed(0)}
               </div>
               <div className="text-xs opacity-80">Total Apostado</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">
+              <div className="text-lg font-bold">
                 ${stats.totalWon.toFixed(0)}
               </div>
               <div className="text-xs opacity-80">Total Ganado</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">
+              <div className="text-lg font-bold">
                 ${stats.biggestWin.toFixed(0)}
               </div>
               <div className="text-xs opacity-80">Mayor Ganancia</div>

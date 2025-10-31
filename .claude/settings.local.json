@@ -12,7 +12,8 @@
       "Bash(npm run build:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\nFix: Configurar Vite para GitHub Pages\n\n- Agregar base: ''/azar-app/'' en vite.config.ts\n- Remover import no usado de motion en RuletaSimplificada\n- Arreglar error de tipo con color en WHEEL_NUMBERS\n- Remover extensión .tsx de imports en main.tsx\n- Build exitoso para producción\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git commit:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

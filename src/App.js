@@ -5,8 +5,10 @@ import { CaraCruz } from './components/CaraCruz';
 import { Dado } from './components/Dado';
 import { PiedraPapelTijera } from './components/PiedraPapelTijera';
 import { Blackjack } from './components/Blackjack';
+import { SlotMachine } from './components/SlotMachine';
+import { TumbleSlot } from './components/TumbleSlot';
 function App() {
-    const [activeTab, setActiveTab] = useState('ruleta');
+    const [activeTab, setActiveTab] = useState('tumble');
     const [isDarkMode, setIsDarkMode] = useState(false);
     // Cargar tema del localStorage
     useEffect(() => {
@@ -30,6 +32,8 @@ function App() {
         }
     };
     const TABS = [
+        { id: 'tumble', label: '⚡ Gates of Olympus', color: 'yellow' },
+        { id: 'slot', label: '🎰 Slot Clásico', color: 'orange' },
         { id: 'ruleta', label: '🎡 Ruleta', color: 'purple' },
         { id: 'cara-cruz', label: '🪙 Cara o Cruz', color: 'blue' },
         { id: 'dado', label: '🎲 Dado', color: 'indigo' },
@@ -40,6 +44,6 @@ function App() {
                                             ? `bg-${tab.color}-500 text-white shadow-lg`
                                             : isDarkMode
                                                 ? 'text-gray-300 hover:bg-gray-700'
-                                                : 'text-gray-700 hover:bg-gray-100'}`, children: tab.label }, tab.id))) }), _jsx("button", { onClick: toggleTheme, className: `ml-4 px-3 py-2 rounded-lg transition-all ${isDarkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-200 text-gray-800'}`, title: isDarkMode ? 'Modo claro' : 'Modo oscuro', children: isDarkMode ? '☀️' : '🌙' })] }) }) }), _jsxs("div", { className: "w-full", children: [activeTab === 'ruleta' && _jsx(Ruleta, {}), activeTab === 'cara-cruz' && _jsx(CaraCruz, {}), activeTab === 'dado' && _jsx(Dado, {}), activeTab === 'ppt' && _jsx(PiedraPapelTijera, {}), activeTab === 'blackjack' && _jsx(Blackjack, {})] })] }) }));
+                                                : 'text-gray-700 hover:bg-gray-100'}`, children: tab.label }, tab.id))) }), _jsx("button", { onClick: toggleTheme, className: `ml-4 px-3 py-2 rounded-lg transition-all ${isDarkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-200 text-gray-800'}`, title: isDarkMode ? 'Modo claro' : 'Modo oscuro', children: isDarkMode ? '☀️' : '🌙' })] }) }) }), _jsxs("div", { className: "w-full", children: [activeTab === 'tumble' && _jsx(TumbleSlot, {}), activeTab === 'slot' && _jsx(SlotMachine, {}), activeTab === 'ruleta' && _jsx(Ruleta, {}), activeTab === 'cara-cruz' && _jsx(CaraCruz, {}), activeTab === 'dado' && _jsx(Dado, {}), activeTab === 'ppt' && _jsx(PiedraPapelTijera, {}), activeTab === 'blackjack' && _jsx(Blackjack, {})] })] }) }));
 }
 export default App;
