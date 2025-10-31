@@ -545,22 +545,6 @@ export const TumbleSlot = () => {
             </button>
           </div>
 
-          <div className="flex gap-1">
-            <button
-              onClick={buyFreeSpins}
-              disabled={isSpinning || balance < bet * 100 || inFreeSpins}
-              className="px-2 py-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white text-sm font-bold rounded-lg transition-all"
-            >
-              💰 BONUS
-            </button>
-
-            <button
-              onClick={() => setShowPaytable(!showPaytable)}
-              className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-all"
-            >
-              📋 PAGOS
-            </button>
-          </div>
           <div className="flex gap-2 flex-wrap">
             {!autoSpinsActive ? (
               <div className="flex gap-1">
