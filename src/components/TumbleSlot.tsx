@@ -92,6 +92,7 @@ export const TumbleSlot = () => {
   const [useAnteBet, setUseAnteBet] = useState(false);
   const [autoSpinsRemaining, setAutoSpinsRemaining] = useState(0);
   const [autoSpinsActive, setAutoSpinsActive] = useState(false);
+  const [spinSpeed, setSpinSpeed] = useState(1); // 1 = normal, 2 = doble, 3 = triple
 
   // Cargar estadísticas
   useEffect(() => {
@@ -243,7 +244,7 @@ export const TumbleSlot = () => {
       }
     }
     setGrid(newGrid);
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500 / spinSpeed));
     return newGrid;
   };
 
@@ -339,7 +340,7 @@ export const TumbleSlot = () => {
       // Mostrar símbolos ganadores
       const allWinningPositions = wins.flatMap((w) => w.positions);
       setWinningPositions(allWinningPositions);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000 / spinSpeed));
 
       // Eliminar símbolos ganadores
       for (const win of wins) {
@@ -354,12 +355,12 @@ export const TumbleSlot = () => {
       }
 
       setGrid([...currentGrid.map((row) => [...row])]);
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300 / spinSpeed));
 
       // Hacer caer símbolos
       currentGrid = dropSymbols(currentGrid);
       setGrid([...currentGrid.map((row) => [...row])]);
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500 / spinSpeed));
 
       setWinningPositions([]);
     }
@@ -661,6 +662,43 @@ export const TumbleSlot = () => {
 
           {/* Botón Spin */}
           <div className="mt-6 flex justify-center flex-col items-center gap-2">
+            {/* Control de velocidad */}
+            <div className="flex gap-2 justify-center">
+              <button
+                onClick={() => setSpinSpeed(1)}
+                disabled={isSpinning}
+                className={`px-3 py-1 rounded-lg font-semibold text-sm transition-all ${
+                  spinSpeed === 1
+                    ? 'bg-yellow-600 text-white'
+                    : 'bg-white/20 text-white/80 hover:bg-white/30'
+                } disabled:opacity-50`}
+              >
+                1x
+              </button>
+              <button
+                onClick={() => setSpinSpeed(2)}
+                disabled={isSpinning}
+                className={`px-3 py-1 rounded-lg font-semibold text-sm transition-all ${
+                  spinSpeed === 2
+                    ? 'bg-yellow-600 text-white'
+                    : 'bg-white/20 text-white/80 hover:bg-white/30'
+                } disabled:opacity-50`}
+              >
+                2x
+              </button>
+              <button
+                onClick={() => setSpinSpeed(3)}
+                disabled={isSpinning}
+                className={`px-3 py-1 rounded-lg font-semibold text-sm transition-all ${
+                  spinSpeed === 3
+                    ? 'bg-yellow-600 text-white'
+                    : 'bg-white/20 text-white/80 hover:bg-white/30'
+                } disabled:opacity-50`}
+              >
+                3x
+              </button>
+            </div>
+
             {autoSpinsActive && (
               <div className="bg-purple-600 text-white px-6 py-2 rounded-full font-bold text-lg">
                 🔄 AUTO SPINS: {autoSpinsRemaining} restantes

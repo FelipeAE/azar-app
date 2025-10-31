@@ -37,7 +37,6 @@ export const Ruleta = () => {
   const [rotation, setRotation] = useState(0);
   const [inputValue, setInputValue] = useState('');
   const [options, setOptions] = useState<RuletaOption[]>(DEFAULT_OPTIONS);
-  const [spinSpeed, setSpinSpeed] = useState(1); // 1 = normal, 2 = doble, 3 = triple
 
   // Cargar opciones del localStorage al montar
   useEffect(() => {
@@ -111,9 +110,6 @@ export const Ruleta = () => {
 
     playSound('spin');
 
-    // Calcular duración según velocidad (3500ms / velocidad)
-    const duration = 3500 / spinSpeed;
-
     // Generar rotación aleatoria (al menos 5 vueltas)
     const randomRotation = Math.random() * 360 + 1800;
     const newRotation = rotation + randomRotation;
@@ -126,7 +122,7 @@ export const Ruleta = () => {
       setSelectedOption(options[selectedIndex]);
       playSound('click');
       setIsSpinning(false);
-    }, duration);
+    }, 3500);
   };
 
   return (
@@ -149,7 +145,7 @@ export const Ruleta = () => {
                 className="w-full h-full"
                 style={{
                   transform: `rotate(${rotation}deg)`,
-                  transition: `transform ${3500 / spinSpeed}ms ease-out`,
+                  transition: 'transform 3.5s ease-out',
                   transitionTimingFunction: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                 }}
               >
@@ -196,43 +192,6 @@ export const Ruleta = () => {
                   );
                 })}
               </svg>
-            </div>
-
-            {/* Control de velocidad */}
-            <div className="mb-4 flex gap-2 justify-center">
-              <button
-                onClick={() => setSpinSpeed(1)}
-                disabled={isSpinning}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-                  spinSpeed === 1
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                } disabled:opacity-50`}
-              >
-                1x
-              </button>
-              <button
-                onClick={() => setSpinSpeed(2)}
-                disabled={isSpinning}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-                  spinSpeed === 2
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                } disabled:opacity-50`}
-              >
-                2x
-              </button>
-              <button
-                onClick={() => setSpinSpeed(3)}
-                disabled={isSpinning}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-                  spinSpeed === 3
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                } disabled:opacity-50`}
-              >
-                3x
-              </button>
             </div>
 
             <button

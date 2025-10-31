@@ -84,6 +84,7 @@ export const SlotMachine = () => {
   });
   const [autoSpinsRemaining, setAutoSpinsRemaining] = useState(0);
   const [autoSpinsActive, setAutoSpinsActive] = useState(false);
+  const [spinSpeed, setSpinSpeed] = useState(1); // 1 = normal, 2 = doble, 3 = triple
 
   // Cargar estadísticas
   useEffect(() => {
@@ -165,7 +166,7 @@ export const SlotMachine = () => {
 
     // Simular giro (generar nuevos símbolos)
     // Cada carrete gira durante diferentes tiempos para efecto escalonado
-    const delays = [400, 550, 700, 850, 1000];
+    const delays = [400, 550, 700, 850, 1000].map(d => d / spinSpeed);
     const newReels: SymbolKey[][] = [[], [], [], [], []];
 
     for (let col = 0; col < 5; col++) {
@@ -177,7 +178,7 @@ export const SlotMachine = () => {
     }
 
     // Esperar a que termine la última animación
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300 / spinSpeed));
 
     // Calcular ganancias
     const wins = calculateWins(newReels);
@@ -460,6 +461,43 @@ export const SlotMachine = () => {
 
           {/* Botón de Spin */}
           <div className="mt-3 flex justify-center flex-col items-center gap-2">
+            {/* Control de velocidad */}
+            <div className="flex gap-2 justify-center">
+              <button
+                onClick={() => setSpinSpeed(1)}
+                disabled={isSpinning}
+                className={`px-3 py-1 rounded-lg font-semibold text-sm transition-all ${
+                  spinSpeed === 1
+                    ? 'bg-red-600 text-white'
+                    : 'bg-white/80 text-gray-700 hover:bg-white'
+                } disabled:opacity-50`}
+              >
+                1x
+              </button>
+              <button
+                onClick={() => setSpinSpeed(2)}
+                disabled={isSpinning}
+                className={`px-3 py-1 rounded-lg font-semibold text-sm transition-all ${
+                  spinSpeed === 2
+                    ? 'bg-red-600 text-white'
+                    : 'bg-white/80 text-gray-700 hover:bg-white'
+                } disabled:opacity-50`}
+              >
+                2x
+              </button>
+              <button
+                onClick={() => setSpinSpeed(3)}
+                disabled={isSpinning}
+                className={`px-3 py-1 rounded-lg font-semibold text-sm transition-all ${
+                  spinSpeed === 3
+                    ? 'bg-red-600 text-white'
+                    : 'bg-white/80 text-gray-700 hover:bg-white'
+                } disabled:opacity-50`}
+              >
+                3x
+              </button>
+            </div>
+
             {autoSpinsActive && (
               <div className="bg-purple-600 text-white px-4 py-1.5 rounded-full font-bold text-base">
                 🔄 AUTO SPINS: {autoSpinsRemaining} restantes
