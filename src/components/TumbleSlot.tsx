@@ -630,7 +630,7 @@ export const TumbleSlot = () => {
             </motion.div>
           )}
 
-          <div className="grid grid-cols-6 gap-0.5 bg-black/30 p-1 rounded-xl">
+          <div className="grid grid-cols-6 gap-0.5 bg-black/30 p-0.5 rounded-xl max-w-xl mx-auto">
             {grid.map((row, rowIndex) =>
               row.map((cell, colIndex) => {
                 const position = rowIndex * COLS + colIndex;

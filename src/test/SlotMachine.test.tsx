@@ -59,12 +59,10 @@ describe('SlotMachine', () => {
       stats: { totalSpins: 0, totalWagered: 0, totalWon: 0, biggestWin: 0 } 
     }));
     
-    const { container } = render(<SlotMachine />);
-    // Wait for component to load saved balance
-    const spinButton = container.querySelector('button') as HTMLButtonElement;
+    render(<SlotMachine />);
     // The component loads with default balance first, then loads from storage
-    // So we check if the button becomes disabled when balance is 0
-    expect(spinButton).toBeDefined();
+    // We just verify the component renders without errors
+    expect(screen.getByText(/Balance:/i)).toBeInTheDocument();
   });
 
   it('shows auto-spin buttons', () => {
@@ -102,7 +100,7 @@ describe('SlotMachine', () => {
     };
     localStorage.setItem('slot_machine_stats', JSON.stringify(savedData));
 
-    const { container } = render(<SlotMachine />);
+    render(<SlotMachine />);
     // Check that stats section exists
     expect(screen.getByText(/Giros Totales/i)).toBeInTheDocument();
     expect(screen.getByText(/\$550\.00/)).toBeInTheDocument(); // balance

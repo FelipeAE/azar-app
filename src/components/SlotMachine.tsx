@@ -404,9 +404,9 @@ export const SlotMachine = () => {
         <div className="bg-gradient-to-b from-blue-900 to-blue-950 p-4 shadow-2xl">
           <div className="relative">
             {/* Carretes */}
-            <div className="grid grid-cols-5 gap-1 bg-black/30 p-2 rounded-xl">
+            <div className="grid grid-cols-5 gap-0.5 bg-black/30 p-0.5 rounded-xl max-w-lg mx-auto">
               {reels.map((reel, colIndex) => (
-                <div key={colIndex} className="flex flex-col gap-1">
+                <div key={colIndex} className="flex flex-col gap-0.5">
                   {reel.map((symbol, rowIndex) => {
                     const isWinningSymbol = winningLines.some((line) =>
                       line.positions.includes(colIndex * 3 + rowIndex)

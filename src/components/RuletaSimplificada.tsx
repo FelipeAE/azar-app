@@ -43,6 +43,7 @@ export const RuletaSimplificada = () => {
   const [history, setHistory] = useState<GameHistory[]>([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [lastResult, setLastResult] = useState<string>('');
+  const [spinSpeed, setSpinSpeed] = useState(1); // 1 = normal, 2 = doble, 3 = triple
 
   // Cargar datos
   useEffect(() => {
@@ -80,6 +81,9 @@ export const RuletaSimplificada = () => {
 
     setIsSpinning(true);
     playSound('spin');
+
+    // Calcular duración según velocidad (2500ms / velocidad)
+    const duration = 2500 / spinSpeed;
 
     // Generar ángulo de rotación aleatorio
     const randomAngle = Math.random() * 360;
@@ -124,7 +128,7 @@ export const RuletaSimplificada = () => {
       setLastResult(isWin ? '¡GANASTE! 🎉' : 'Perdiste 😢');
       isWin ? playSound('win') : playSound('lose');
       setIsSpinning(false);
-    }, 2500);
+    }, duration);
   };
 
   const resetStats = () => {
@@ -159,7 +163,7 @@ export const RuletaSimplificada = () => {
                 className="w-full h-full"
                 style={{
                   transform: `rotate(${rotation}deg)`,
-                  transition: isSpinning ? 'transform 2.5s ease-out' : 'none',
+                  transition: isSpinning ? `transform ${2500 / spinSpeed}ms ease-out` : 'none',
                   transitionTimingFunction: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                 }}
               >
@@ -265,6 +269,43 @@ export const RuletaSimplificada = () => {
                   ))}
                 </div>
               </div>
+            </div>
+
+            {/* Control de velocidad */}
+            <div className="mb-2 flex gap-2 justify-center">
+              <button
+                onClick={() => setSpinSpeed(1)}
+                disabled={isSpinning}
+                className={`px-3 py-1 rounded-lg font-semibold text-sm transition-all ${
+                  spinSpeed === 1
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                } disabled:opacity-50`}
+              >
+                1x
+              </button>
+              <button
+                onClick={() => setSpinSpeed(2)}
+                disabled={isSpinning}
+                className={`px-3 py-1 rounded-lg font-semibold text-sm transition-all ${
+                  spinSpeed === 2
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                } disabled:opacity-50`}
+              >
+                2x
+              </button>
+              <button
+                onClick={() => setSpinSpeed(3)}
+                disabled={isSpinning}
+                className={`px-3 py-1 rounded-lg font-semibold text-sm transition-all ${
+                  spinSpeed === 3
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                } disabled:opacity-50`}
+              >
+                3x
+              </button>
             </div>
 
             {/* Botón girar */}
